@@ -1,71 +1,77 @@
 import re
 import os
-from config import set_path
+from config import Config
 
 
-class AttachmentCleaner:
+class AttachmentsCleaner:
     def __init__(self):
-        self.VALUE_DIR, self.ATTACHMENT_DIR = set_path()
-        self.MARKDOWN_FILE_PATHS = []
-        self.ATTACHMENT_FILE_NAMES_AND_PATHS =[]
-        self.ATTACHMENT_FILES_IN_LINKS = []
-        self.USABLE_ATTACHMENT_FILE_PATHS = []
+        self.config = Config()
+        self.markdown = []
+        self.attachments = []
+        self.attachments_used = []
+        self.attachments_counter = {
+            "before_cleaning": 0,
+            "after_cleaning": 0,
+        }
 
-    def run(self):
-        files_before_cleaning = self.count_attachment_files()
-        self.add_file_paths()
-        self.catch_links_in_text()
-        self.add_usable_attachment_file_paths()
-        self.clean()
-        files_after_cleaning = self.count_attachment_files()
-        files_diff = files_before_cleaning - files_after_cleaning
+    def run_attachments_cleaner(self):
+        self.walk_obsidian_vault()
+        self.attachments_counter["before_cleaning"] = len(self.attachments)
+        self.catch_attachments_links_in_markdown_files()
+        self.remove_unused_attachments()
+        self.attachments_counter["after_cleaning"] = len(self.attachments)
 
-        if files_diff:
+    def walk_obsidian_vault(self):
+        for root, dirs, files in os.walk(self.config.VAULT_PATH):
+            if not any(
+                dir_ignored in root for dir_ignored in self.config.DIRS_TO_IGNORE
+            ):
+                for file in files:
+                    if file.endswith(".md"):
+                        self.markdown.append((file, os.path.join(root, file)))
+                    else:
+                        if not any(
+                            file_ignored in file
+                            for file_ignored in self.config.FILES_TO_IGNORE
+                        ):
+                            self.attachments.append((file, os.path.join(root, file)))
+
+    def catch_attachments_links_in_markdown_files(self):
+        for markdown_filename, markdown_path in self.markdown:
+            with open(markdown_path, mode="r", encoding="utf-8") as file:
+                content = file.read()
+                pattern = r"!\[\[.*?\..*?\]\]"
+                markdown_attachment_links = re.findall(pattern, content)
+
+            if markdown_attachment_links:
+                for link in markdown_attachment_links:
+                    attachment_filename = (
+                        link.replace("![[", "").replace("]]", "").split("|")[0].strip()
+                    )
+                    if attachment_filename not in self.attachments_used:
+                        self.attachments_used.append(attachment_filename)
+
+    def remove_unused_attachments(self):
+        for attachment_index, attachment in enumerate(self.attachments):
+            attachment_filename = attachment[0]
+            attachment_path = attachment[1]
+            if attachment_filename not in self.attachments_used:
+                os.remove(attachment_path)
+                self.attachments.remove(attachment)
+
+    def print_terminal_output(self):
+        attachments_removed = (
+            self.attachments_counter["before_cleaning"]
+            - self.attachments_counter["after_cleaning"]
+        )
+
+        if attachments_removed:
             print("🧹" * 25)
-            print(f"\nCleaned {files_diff} unused attachment file(-s)", end="\n\n")
-            print("Files before cleaning:", files_before_cleaning)
-            print("Files after cleaning:", files_after_cleaning, end="\n\n")
+            print(f"\nCleaned {attachments_removed} unused attachment(-s)", end="\n\n")
+            print("Attachments before cleaning:", attachments_removed)
+            print("Attachments after cleaning:", attachments_removed, end="\n\n")
             print("🧹" * 25)
         else:
             print("🗇 " * 25)
-            print("\nThere aren't unused attachment files to clean", end="\n\n")
+            print("\nThere aren't unused attachments to clean", end="\n\n")
             print("🗇 " * 25)
-
-    def count_attachment_files(self):
-        files_amount = 0
-        for root, dirs, files in os.walk(self.ATTACHMENT_DIR):
-            files_amount += len(files)
-        return files_amount
-
-    def add_file_paths(self):
-        for root, dirs, files in os.walk(self.VALUE_DIR):
-            for file_name in files:
-                file_path = os.path.join(root, file_name)
-                if file_name.endswith(".md"):
-                    self.MARKDOWN_FILE_PATHS.append(file_path)
-                else:
-                    self.ATTACHMENT_FILE_NAMES_AND_PATHS.append((file_name, file_path))
-
-    def catch_links_in_text(self):
-        for md_file_path in self.MARKDOWN_FILE_PATHS:
-            with open(md_file_path, mode="r", encoding="utf-8") as file:
-                content = file.read()
-
-            pattern = r"!\[\[.*?\..*?\]\]"
-            matches = re.findall(pattern, content)
-
-            for match in matches:
-                if match not in self.ATTACHMENT_FILES_IN_LINKS:
-                    link_file_name = match.replace("![[", "").replace("]]", "").split("|")[0].strip()
-                    self.ATTACHMENT_FILES_IN_LINKS.append(link_file_name)
-
-    def add_usable_attachment_file_paths(self):
-        for link_file_name in self.ATTACHMENT_FILES_IN_LINKS:
-            for file_name, file_path in self.ATTACHMENT_FILE_NAMES_AND_PATHS:
-                if file_name in link_file_name:
-                    self.USABLE_ATTACHMENT_FILE_PATHS.append(file_path)
-
-    def clean(self):
-        for file_name, file_path in self.ATTACHMENT_FILE_NAMES_AND_PATHS:
-            if file_path not in self.USABLE_ATTACHMENT_FILE_PATHS:
-                os.remove(file_path)
