@@ -1,7 +1,6 @@
-from views import AttachmentsCleaner
+from cli import AttachmentsCleanerCLI
 
 
 if __name__ == "__main__":
-    cleaner = AttachmentsCleaner()
-    cleaner.run_attachments_cleaner()
-    cleaner.print_terminal_output()
+    cli_controller = AttachmentsCleanerCLI()
+    cli_controller.run_attachments_cleaner_cli()
