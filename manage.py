@@ -3,7 +3,6 @@
 Initializes and runs the command line interface.
 """
 
-
 from cli import AttachmentsCleanerCLI
 
 

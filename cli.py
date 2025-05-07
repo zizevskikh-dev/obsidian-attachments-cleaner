@@ -1,9 +1,24 @@
+"""Command Line Interface for Obsidian Attachments Cleaner.
+
+This module provides the command-line interface for interacting with
+the attachments cleaning functionality.
+"""
+
 import argparse
 from views import AttachmentsCleaner
 
 
 class AttachmentsCleanerCLI:
-    def __init__(self):
+    """Handles command line interface for the attachments cleaner.
+
+    Attributes:
+        parser (argparse.ArgumentParser): CLI argument parser.
+        arguments (argparse.Namespace): Parsed command line arguments.
+        cleaner_view (AttachmentsCleaner): Main cleaner functionality instance.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the CLI with argument parser and cleaner instance."""
         self.parser = argparse.ArgumentParser(
             prog="Obsidian Attachments Cleaner, the CLI utility",
             usage="[-r | -run] [-s | -show]",
@@ -14,7 +29,12 @@ class AttachmentsCleanerCLI:
         self.arguments = self.add_arguments_to_parser()
         self.cleaner_view = AttachmentsCleaner()
 
-    def add_arguments_to_parser(self):
+    def add_arguments_to_parser(self) -> argparse.Namespace:
+        """Define and parse command line arguments.
+
+        Returns:
+            argparse.Namespace: Parsed command line arguments.
+        """
         self.parser.add_argument(
             "-r",
             "-run",
@@ -31,7 +51,11 @@ class AttachmentsCleanerCLI:
         )
         return self.parser.parse_args()
 
-    def run_attachments_cleaner_cli(self):
+    def run_attachments_cleaner_cli(self) -> None:
+        """Execute the cleaner based on command line arguments (depends on flags):
+        - runs the cleaning process;
+        - shows output in Terminal.
+        """
         if self.arguments.run_cleaning:
             self.cleaner_view.run_attachments_cleaner()
 
