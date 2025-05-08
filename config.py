@@ -1,72 +1,55 @@
-"""Configuration module for the Obsidian Attachments Cleaner.
+"""Configuration handler for Obsidian Attachments Cleaner.
 
-This module contains the Config class which handles all configuration settings
-for the cleaning unused attachments, including:
-    - path to the Obsidian vault directory;
-    - paths to the ignored directories;
-    - ignored files.
+This module provides the AttachmentCleanerConfig class which manages all configuration
+settings for the attachment cleanup process, including vault paths and exclusion settings.
 """
 
-import os
-from typing import List
+from pathlib import Path
+from typing import Set
 
 
-class Config:
-    """Handles configuration settings for the Obsidian Attachments Cleaner.
+class AttachmentCleanerConfig:
+    """Manages configuration settings for the Obsidian attachments cleaner.
 
     Attributes:
-        VAULT_PATH (str): Path to the Obsidian vault directory.
-        DIRS_TO_IGNORE (List[str]): List of directories to exclude from processing.
-        FILES_TO_IGNORE (List[str]): List of files to exclude from processing.
+        OBSIDIAN_VAULT_ROOT (Path): Path to the root directory of the Obsidian vault.
+        EXCLUDED_DIRECTORIES (Set[Path]): Set of directories paths to exclude from processing.
+        EXCLUDED_FILES (Set[str]): Set of filenames to exclude from processing.
     """
 
     def __init__(self) -> None:
-        """Initialize Config with default paths and ignore settings."""
-        self.VAULT_PATH = self.set_obsidian_vault_path()
-        self.DIRS_TO_IGNORE = self.set_dirs_to_ignore()
-        self.FILES_TO_IGNORE = self.set_files_to_ignore()
+        """Initialize configuration with default paths and exclusion settings."""
+        self.OBSIDIAN_VAULT_ROOT = self.get_obsidian_vault_root()
+        self.EXCLUDED_DIRECTORIES = self.get_default_excluded_dirs()
+        self.EXCLUDED_FILES = self.get_default_excluded_files()
 
     @staticmethod
-    def set_obsidian_vault_path() -> str:
-        """Sets the absolute path to the Obsidian vault.
-
-        Automatically converts path separators to match the current operating system
-        (ensuring cross-platform compatibility).
+    def get_obsidian_vault_root() -> Path:
+        """Get the absolute path to the Obsidian vault directory.
 
         Returns:
-            str: Absolute path to the Obsidian vault directory.
+            Path: Absolute path to the Obsidian vault directory.
         """
-        obsidian_vault_path = os.path.join(
-            os.path.expanduser("~"),
-            "Documents",
-            "OBSIDIAN_VAULT",
-        )
-        return obsidian_vault_path
+        return Path.home() / "Documents" / "OBSIDIAN_VAULT"
 
-    def set_dirs_to_ignore(self) -> List[str]:
-        """Set directories to exclude from processing.
-
-        These directories will not be scanned for attachments or markdown files.
+    def get_default_excluded_dirs(self) -> Set[Path]:
+        """Get directories excluded by default.
 
         Returns:
-            List[str]: Absolute paths of directories to ignore.
+            Set[Path]: Default excluded directories
         """
-        dirs_to_ignore = [
-            os.path.join(self.VAULT_PATH, ".obsidian"),
-            os.path.join(self.VAULT_PATH, ".git"),
-        ]
-        return dirs_to_ignore
+        return {
+            self.OBSIDIAN_VAULT_ROOT / ".obsidian",
+            self.OBSIDIAN_VAULT_ROOT / ".git",
+        }
 
     @staticmethod
-    def set_files_to_ignore() -> List[str]:
-        """Set files to exclude from processing.
-
-        These files will not be removed.
+    def get_default_excluded_files() -> Set[str]:
+        """Get files excluded by default.
 
         Returns:
-            List[str]: Names of files to ignore.
+            Set[str]: Default excluded filenames
         """
-        files_to_ignore = [
+        return {
             ".gitignore",
-        ]
-        return files_to_ignore
+        }

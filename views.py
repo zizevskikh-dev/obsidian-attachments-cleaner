@@ -7,14 +7,14 @@ identifying unused attachments, and removing them.
 import re
 import os
 from typing import List, Tuple
-from config import Config
+from config import AttachmentCleanerConfig
 
 
 class AttachmentsCleaner:
     """Handles the process of cleaning unused attachments in Obsidian vault.
 
     Attributes:
-        config (Config): Configuration object with paths and ignore settings.
+        config (AttachmentCleanerConfig): Configuration object with paths and ignore settings.
         markdown (List[Tuple[str, str]]): List of markdown files (filename, path).
         attachments (List[Tuple[str, str]]): List of attachment files (filename, path).
         attachments_used (List[str]): List of attachment filenames referenced in markdown.
@@ -23,7 +23,7 @@ class AttachmentsCleaner:
 
     def __init__(self) -> None:
         """Initialize the cleaner with empty collections and configuration."""
-        self.config = Config()
+        self.config = AttachmentCleanerConfig()
         self.markdown: List[Tuple[str, str]] = []
         self.attachments: List[Tuple[str, str]] = []
         self.attachments_used: List[str] = []
@@ -54,9 +54,9 @@ class AttachmentsCleaner:
         Adds tuples of (filename, path) to the self.markdown and self.attachments lists,
         if it doesn't conflict with ignored directories and files.
         """
-        for root, dirs, files in os.walk(self.config.VAULT_PATH):
+        for root, dirs, files in os.walk(self.config.OBSIDIAN_VAULT_ROOT):
             if not any(
-                dir_ignored in root for dir_ignored in self.config.DIRS_TO_IGNORE
+                dir_ignored in root for dir_ignored in self.config.EXCLUDED_DIRECTORIES
             ):
                 for file in files:
                     if file.endswith(".md"):
@@ -64,7 +64,7 @@ class AttachmentsCleaner:
                     else:
                         if not any(
                             file_ignored in file
-                            for file_ignored in self.config.FILES_TO_IGNORE
+                            for file_ignored in self.config.EXCLUDED_FILES
                         ):
                             self.attachments.append((file, os.path.join(root, file)))
 
