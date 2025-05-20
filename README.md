@@ -90,13 +90,6 @@ python3 main.py --show
 
 ### 🔍 Cleaning Report
 
-```
-print(f"🧹 Scanned {before} attachments")  
-print(f"✅ Removed {removed} unused files")  
-print("Attachments before cleaning:", removed)  
-print(f"📊 Before: {before} | After: {after}")
-```
-
 ```bash
 🧹 Scanned 25 attachments
 ✅ Removed 5 unused files
