@@ -46,25 +46,24 @@ git clone https://github.com/zizevskikh-dev/obsidian-attachments-cleaner.git
 
 ```python
 @staticmethod
-def _get_vault_root() -> str:
-    return os.path.join(os.path.expanduser("~"), "Documents", "OBSIDIAN_VAULT")
+def _get_vault_root() -> Path:
+    return Path.home() / "Documents" / "OBSIDIAN_VAULT"
 ```
 
 ### 2. Exclude directories and files
 
 ```python
-def _get_excluded_dirs(self) -> Set[str]:
+def _get_excluded_dirs(self) -> Set[Path]:
     return {
-        os.path.join(self.OBSIDIAN_VAULT_ROOT, ".obsidian"),
-        os.path.join(self.OBSIDIAN_VAULT_ROOT, ".git"),
+        self.VAULT_ROOT / ".obsidian",
+        self.VAULT_ROOT / ".git",
     }
 ```
 
 ```python
-@staticmethod
-def _get_excluded_files() -> Set[str]:
+def _get_excluded_files(self) -> Set[Path]:
     return {
-        ".gitignore",
+        self.VAULT_ROOT / ".gitignore",
     }
 ```
 
@@ -114,7 +113,7 @@ python3 main.py --show
 
 ## 🛠️ Project Info
 
-- **Version:** 2.0.2
+- **Version:** 2.2.1
 - **Maintainer:** Aleksander Zizevskikh
 - **License:** MIT
 

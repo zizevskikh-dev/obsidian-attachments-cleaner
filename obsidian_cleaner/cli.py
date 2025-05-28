@@ -1,5 +1,5 @@
 import argparse
-from core import AttachmentsCleaner
+from obsidian_cleaner.core import AttachmentsCleaner
 
 
 class AttachmentsCleanerCLI:
@@ -20,7 +20,8 @@ class AttachmentsCleanerCLI:
             formatter_class=argparse.RawTextHelpFormatter,
         )
         parser.add_argument(
-            "-s", "--show",
+            "-s",
+            "--show",
             dest="show_output",
             action="store_true",
             help="Display the cleaning report after execution",
